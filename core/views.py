@@ -1,6 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from .tasks import generate_text_task
 
 from .models import Prompt
 from .serializers import PromptSerializer
@@ -12,8 +13,10 @@ class PromptViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        prompt = serializer.save()  # status = PENDING
+        prompt = serializer.save()  
 
+        generate_text_task.delay(prompt.id)
+        
         return Response(
             self.get_serializer(prompt).data,
             status=status.HTTP_201_CREATED
