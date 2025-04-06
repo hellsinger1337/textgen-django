@@ -35,5 +35,17 @@ services:
       - db
       - redis  
 
+  celery:
+    build: .
+    container_name: celery
+    command: celery -A textgen_django worker --loglevel=INFO
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+      
 volumes:
   postgres_data:
